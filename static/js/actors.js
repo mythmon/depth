@@ -27,20 +27,43 @@ Actor.prototype.tick = function(dt) {
 /* class Hero */
 function Hero(options) {
   var defaults = {
-    sheet: 'img/author.png',
-    image: 'hero_s'
+    sheet: 'img/sprites.png',
+    image: 'hero_s',
+    speed: 35
   };
   $.extend(defaults, options);
   Actor.call(this, defaults);
 }
 
 Hero.prototype = new Actor();
+
+Hero.prototype.tick = function(dt) {
+  Actor.prototype.tick.call(this, dt);
+
+  var offset = [0, 0];
+
+  if (window.keys(37, 64)) {
+    offset[0] -= 1;
+  }
+  if (window.keys(39, 68)) {
+    offset[0] += 1;
+  }
+  if (window.keys(38, 87)) {
+    offset[1] -= 1;
+  }
+  if (window.keys(40, 63)) {
+    offset[1] += 1;
+  }
+
+  this.x += offset[0] * this.speed * dt;
+  this.y += offset[1] * this.speed * dt;
+};
 /* end Hero */
 
 /* class Tile */
 function Tile(options) {
   var defaults = {
-    sheet: 'img/author.png'
+    sheet: 'img/sprites.png'
   };
   var o = $.extend({}, defaults, options);
   Actor.call(this, o);

@@ -29,7 +29,19 @@ var offsets = {
   'wall_1100': [0, 2],
   'wall_1101': [1, 2],
   'wall_1110': [0, 1],
-  'wall_1111': [1, 1]
+  'wall_1111': [1, 1],
+
+  'wall_1001a': [0, 6],
+  'wall_0110a': [1, 6],
+  'wall_0011a': [2, 6],
+  'wall_1100a': [3, 6],
+
+  'wall_1111a': [1, 1],
+  'wall_1111b': [1, 1],
+  'wall_1111c': [1, 1],
+  'wall_1111d': [1, 1],
+
+  'unknown': [0, 7]
 };
 
 var size = 32;
@@ -43,7 +55,7 @@ for (key in offsets) {
 /* class Sprite */
 function Sprite(options) {
   var defaults = {
-    sheet: 'img/tiles.png',
+    sheet: 'img/sprites.png',
     image: 'unknown',
 
     ready: false,
@@ -53,6 +65,9 @@ function Sprite(options) {
   $.extend(this, defaults, options);
 
   this.offset = offsets[this.image];
+  if (this.offset === undefined) {
+    this.offset = offsets['unknown'];
+  }
 
   resource.load(this.sheet).then(function(img) {
     this.img = img;
