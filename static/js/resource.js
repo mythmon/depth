@@ -18,7 +18,7 @@ function load(urls) {
   return $.when.apply(this, deferreds);
 }
 
-var BASE_URL = '../';
+var BASE_URL = '';
 
 function _loadOne(url) {
   var d = $.Deferred();
