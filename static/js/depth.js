@@ -65,6 +65,8 @@ function init() {
   var h = new Hero({x: 320, y: 160});
   objs.push(h);
 
+  objs.push(new Goo({x: 352, y: 160}));
+
   camera = new Camera({target: h});
 
   requestAnimFrame(render);
