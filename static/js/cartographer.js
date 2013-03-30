@@ -94,7 +94,7 @@ function blankMap(w, h, walls) {
 }
 
 var neighbors = [[0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
-function insertConvoluteExample(map, x, y, code) {
+function _convoleGroup(map, x, y, code) {
   var width = map[0].length;
   var height = map.length;
   var i;
@@ -122,10 +122,44 @@ function insertConvoluteExample(map, x, y, code) {
   }
 }
 
+function convolutionExample() {
+  var map = cartographer.blankMap(67, 67);
+  var objs = [];
+
+  var i = 0;
+
+  for (y=3; y<map.length; y += 4) {
+    for (x=3; x<map[0].length; x += 4, i++) {
+      var code = '1' + utils.pad(i.toString(2), 8, '0');
+      _convoleGroup(map, x, y, code);
+    }
+  }
+
+  var convoluted = convolute(map);
+
+  for (y = 0; y < map.length; y++) {
+    for (x = 0; x < map[0].length; x++) {
+      cell = convoluted[y][x];
+      objs.push(new Tile({
+        x: x * 32,
+        y: y * 32,
+        images: {0: cell}
+      }));
+    }
+  }
+
+  return {
+    map: map,
+    objs: objs
+  };
+}
+
 window.cartographer = {
   convolute: convolute,
   blankMap: blankMap,
-  insertConvoluteExample: insertConvoluteExample
+  maps: {
+    convolutionExample: convolutionExample
+  }
 };
 
 })();
