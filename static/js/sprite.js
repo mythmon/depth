@@ -84,6 +84,8 @@ Sprite.prototype.render = function(ctx) {
 };
 /* end Sprite */
 
+Sprite.unknown = new Sprite();
+
 window.Sprite = Sprite;
 
 })();

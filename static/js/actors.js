@@ -3,14 +3,20 @@
 /* class Actor */
 function Actor(options) {
   var defaults = {
-    x: 0, y: 0
+    x: 0, y: 0,
+    images: {},
+    sprites: {},
+    sprite: Sprite.unknown
   };
   $.extend(this, defaults, options);
 
-  this.sprite = new Sprite({
-    sheet: this.sheet,
-    image: this.image
-  });
+  var key;
+  for (key in this.images) {
+    this.sprite = this.sprites[key] = new Sprite({
+      sheet: this.sheet,
+      image: this.images[key]
+    });
+  }
 }
 
 Actor.prototype.render = function(ctx) {
@@ -27,27 +33,42 @@ Actor.prototype.tick = function(dt) {
 /* class Hero */
 function Hero(options) {
   var defaults = {
-    sheet: 'img/sprites.png',
-    image: 'hero_s',
     speed: 0.2,
-    anim_pos: []
+    anim_pos: [],
+    images: {
+      'n': 'hero_n',
+      's': 'hero_s',
+      'e': 'hero_e',
+      'w': 'hero_w'
+    }
   };
   $.extend(defaults, options);
   Actor.call(this, defaults);
 
-  key('left, a', this.move.bind(this, -32, 0));
-  key('right, d', this.move.bind(this, 32, 0));
-  key('up, w', this.move.bind(this, 0, -32));
-  key('down, s', this.move.bind(this, 0, 32));
+  key('left, a', this.move.bind(this, 'w'));
+  key('right, d', this.move.bind(this, 'e'));
+  key('up, w', this.move.bind(this, 'n'));
+  key('down, s', this.move.bind(this, 's'));
 }
 
 Hero.prototype = new Actor();
 
-Hero.prototype.move = function(dx, dy) {
+var directions = {
+  n: {x: 0, y: -1},
+  e: {x: 1, y: 0},
+  s: {x: 0, y: 1},
+  w: {x: -1, y: 0}
+};
+
+Hero.prototype.move = function(dir) {
   if (this.anim_pos.length >= 2) return false;
 
-  var i;
+  var dx = directions[dir].x * 32;
+  var dy = directions[dir].y * 32;
 
+  this.sprite = this.sprites[dir];
+
+  var i;
   var target = [this.x, this.y];
   for (i = 0; i<this.anim_pos.length; i++) {
     target[0] += this.anim_pos[i].x;
@@ -103,6 +124,10 @@ Hero.prototype.tick = function(dt) {
     this.x = Math.round(this.x / 32) * 32;
     this.y = Math.round(this.y / 32) * 32;
   }
+};
+
+Hero.prototype.draw = function(ctx) {
+  Actor.prototype.draw.call(this, ctx);
 };
 /* end Hero */
 

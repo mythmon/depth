@@ -57,7 +57,7 @@ function init() {
       objs.push(new Tile({
         x: x * 32,
         y: y * 32,
-        image: cell
+        images: {0: cell}
       }));
     }
   }
