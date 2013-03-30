@@ -15,7 +15,6 @@ var ctx;
 var WIDTH = 640, HEIGHT = 480;
 var stats;
 
-var map;
 var sprites = [];
 var objs = [];
 var camera;
@@ -38,8 +37,8 @@ function init() {
 
   ctx = canvas.getContext("2d");
 
-  var temp = cartographer.maps.convolutionExample();
-  map = temp.map;
+  var temp = cartographer.convolutionExample();
+  game.map = temp.map;
   objs = objs.concat(temp.objs);
 
   var h = new Hero({x: 320, y: 160});
@@ -49,7 +48,7 @@ function init() {
 
   camera = new Camera({target: h});
 
-  requestAnimFrame(render);
+  render();
 }
 
 var lastFrame = +new Date();
@@ -60,8 +59,7 @@ function render() {
   var thisFrame = +new Date();
   var dt = thisFrame - lastFrame;
 
-  ctx.fillStyle = 'black';
-  ctx.rect(0, 0, WIDTH, HEIGHT);
+  ctx.clearRect(0, 0, WIDTH, HEIGHT);
 
   ctx.save();
   camera.transform(ctx);
@@ -79,17 +77,19 @@ function render() {
   stats.end();
 }
 
-window.game = {};
+$(init);
+
+window.game = {
+  WIDTH: WIDTH,
+  HEIGHT: HEIGHT
+};
 
 window.game.walkable = function(x, y) {
-  return map[y][x] !== 1;
+  return game.map[y][x] !== 1;
 };
 
 window.game.pixelToTile = function(x, y) {
   return [Math.floor(x / 32), Math.floor(y / 32)];
 };
-
-
-$(init);
 
 })();

@@ -11,8 +11,6 @@
         "url": "git://github.com/mythmon/depth.git"
     },
     "dependencies": {
-        "nunjucks": "0.1.8a",
-        "stylus": "0.32.1",
     },
     "engines": {
         "node": "0.8.22",

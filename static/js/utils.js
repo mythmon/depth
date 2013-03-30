@@ -12,6 +12,6 @@ window.utils.pad = function(str, width, pad) {
     out  = pad + out;
   }
   return out;
-}
+};
 
 })();

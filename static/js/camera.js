@@ -4,13 +4,18 @@ function Camera(opts) {
   var defaults = {
     target: null,
     x: 0, y: 0,
-    width: 640, height: 480,
-    clamp: {
-      x: [-1504, 0],
-      y: [-1664, 0]
-    }
+    width: game.WIDTH, height: game.HEIGHT
   };
+
   $.extend(this, defaults, opts);
+
+  if (this.clamp === undefined) {
+    this.clamp = {
+      x: [game.WIDTH - game.map[0].length * 32, 0],
+      y: [game.HEIGHT - game.map.length * 32, 0]
+    };
+    console.log(this.clamp);
+  }
 }
 
 Camera.prototype.transform = function(ctx) {

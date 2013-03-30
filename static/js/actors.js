@@ -14,6 +14,7 @@ function Actor(options) {
 
   var key;
   for (key in this.images) {
+    if (!this.images.hasOwnProperty(key)) continue;
     this.sprite = this.sprites[key] = new Sprite({
       sheet: this.sheet,
       image: this.images[key]
@@ -133,9 +134,47 @@ Hero.prototype.draw = function(ctx) {
 /* class Tile */
 function Tile(options) {
   var defaults = {
-    sheet: 'img/sprites.png'
+    sheet: 'img/sprites.png',
+    sprites: {}
   };
   var o = $.extend({}, defaults, options);
+
+  var key;
+  var original_images = o.images || {}
+  o.images = {};
+  for (key in original_images) {
+    if (!original_images.hasOwnProperty(key)) continue;
+
+    var image = original_images[key];
+    console.log(image);
+    var match = image.match(/^wall_(\d)(\d)(\d)(\d)$/);
+
+    if (match) {
+      // Wall sprites are made of several subsprites. Build a MultiSprite.
+      o.sheet = 'img/tile_pieces.png';
+      var ne = match[1];
+      var se = match[2];
+      var sw = match[3];
+      var nw = match[4];
+
+      console.log(o.sheet);
+      var imgs = ['wall_ne_' + ne,
+                  'wall_se_' + se,
+                  'wall_sw_' + sw,
+                  'wall_nw_' + nw];
+      console.log(imgs);
+
+      o.sprites[key] = new MultiSprite({
+        sheet: o.sheet,
+        images:  imgs
+      });
+      o.sprite = o.sprites[key];
+      console.log(o.sprite);
+    } else {
+      o.images[key] = image;
+    }
+  }
+
   Actor.call(this, o);
 }
 
