@@ -62,7 +62,7 @@ function init() {
     }
   }
 
-  var h = new Hero({x: 320, y: 224});
+  var h = new Hero({x: 320, y: 160});
   objs.push(h);
 
   camera = new Camera({target: h});
@@ -96,6 +96,18 @@ function render() {
   lastFrame = thisFrame;
   stats.end();
 }
+
+window.game = {};
+
+window.game.walkable = function(x, y) {
+  console.log('walkable for ' + x + ', ' + y);
+  return map[y][x] !== 1;
+};
+
+window.game.pixelToTile = function(x, y) {
+  return [Math.floor(x / 32), Math.floor(y / 32)];
+};
+
 
 $(init);
 

@@ -52,14 +52,13 @@ function _convolveCell(map, x, y) {
   code = [n, e, s, w, ne, se, sw, nw].join('');
   var alt = '';
 
-  if (_check('11000111')) { alt = 'a'; }
-  if (_check('01101011')) { alt = 'b'; }
-  if (_check('00111101')) { alt = 'c'; }
-  if (_check('10011110')) { alt = 'd'; }
-  if (_check('11110111')) { alt = 'a'; }
-  if (_check('11111011')) { alt = 'b'; }
-  if (_check('11111101')) { alt = 'c'; }
-  if (_check('11111110')) { alt = 'd'; }
+  if (_check('11000...')) { alt = 'a'; }
+  if (_check('0110.0..')) { alt = 'a'; }
+  if (_check('0011..0.')) { alt = 'a'; }
+  if (_check('1001...0')) { alt = 'a'; }
+
+  if (_check('11010..1')) { alt = 'a'; }
+  if (_check('11011..0')) { alt = 'b'; }
 
   return [n, e, s, w].join('') + alt;
 }

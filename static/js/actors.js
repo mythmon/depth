@@ -43,10 +43,29 @@ function Hero(options) {
 
 Hero.prototype = new Actor();
 
-Hero.prototype.move = function(ox, oy) {
+Hero.prototype.move = function(dx, dy) {
   if (this.anim_pos.length >= 2) return false;
 
-  this.anim_pos.push({x: ox, y: oy});
+  var i;
+
+  var target = [this.x, this.y];
+  for (i = 0; i<this.anim_pos.length; i++) {
+    target[0] += this.anim_pos[i][0];
+    target[1] += this.anim_pos[i][1];
+  }
+  target[0] += dx;
+  target[1] += dy;
+
+  var tile = game.pixelToTile(target[0], target[1]);
+
+  if (game.walkable(tile[0], tile[1])) {
+    this.anim_pos.push({x: dx, y: dy});
+  } else {
+    console.log('hit');
+    // Play a little animation.
+    var _t = function(n) { return n === 0 ? 0 : n / Math.abs(n) * 2; };
+    this.anim_pos.push({x: _t(dx), y: _t(dy)});
+  }
 
   return false;
 };
