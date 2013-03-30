@@ -6,8 +6,8 @@ function Camera(opts) {
     x: 0, y: 0,
     width: 640, height: 480,
     clamp: {
-      x: [-480, 0],
-      y: [-640, 0]
+      x: [-1504, 0],
+      y: [-1664, 0]
     }
   };
   $.extend(this, defaults, opts);

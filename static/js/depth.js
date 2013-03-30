@@ -38,7 +38,7 @@ function init() {
 
   ctx = canvas.getContext("2d");
 
-  map = cartographer.blankMap(35, 35);
+  map = cartographer.blankMap(67, 67);
 
   var i = 0;
 
@@ -100,7 +100,6 @@ function render() {
 window.game = {};
 
 window.game.walkable = function(x, y) {
-  console.log('walkable for ' + x + ', ' + y);
   return map[y][x] !== 1;
 };
 
