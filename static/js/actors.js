@@ -29,34 +29,61 @@ function Hero(options) {
   var defaults = {
     sheet: 'img/sprites.png',
     image: 'hero_s',
-    speed: 35
+    speed: 0.2,
+    anim_pos: [],
   };
   $.extend(defaults, options);
   Actor.call(this, defaults);
+
+  key('left, a', this.move.bind(this, -32, 0));
+  key('right, d', this.move.bind(this, 32, 0));
+  key('up, w', this.move.bind(this, 0, -32));
+  key('down, s', this.move.bind(this, 0, 32));
 }
 
 Hero.prototype = new Actor();
 
+Hero.prototype.move = function(ox, oy) {
+  if (this.anim_pos.length >= 2) return false;
+
+  this.anim_pos.push({x: ox, y: oy});
+
+  return false;
+};
+
 Hero.prototype.tick = function(dt) {
-  Actor.prototype.tick.call(this, dt);
+  if (this.anim_pos.length) {
+    var dx = this.anim_pos[0].x;
+    var dy = this.anim_pos[0].y;
+    var ang = Math.atan2(dy, dx);
 
-  var offset = [0, 0];
+    var fx = Math.round(Math.cos(ang) * this.speed * dt);
+    var fy = Math.round(Math.sin(ang) * this.speed * dt);
 
-  if (window.keys(37, 64)) {
-    offset[0] -= 1;
-  }
-  if (window.keys(39, 68)) {
-    offset[0] += 1;
-  }
-  if (window.keys(38, 87)) {
-    offset[1] -= 1;
-  }
-  if (window.keys(40, 63)) {
-    offset[1] += 1;
-  }
+    if (Math.abs(fx) > Math.abs(dx)) fx = dx;
+    if (Math.abs(fy) > Math.abs(dy)) fy = dy;
 
-  this.x += offset[0] * this.speed * dt;
-  this.y += offset[1] * this.speed * dt;
+    this.x += fx;
+    this.y += fy;
+    this.anim_pos[0].x -= fx;
+    this.anim_pos[0].y -= fy;
+
+    if (Math.abs(dx) <= 1) {
+      this.x += dx;
+      dx = this.anim_pos[0].x = 0;
+    }
+    if (Math.abs(dy) <= 1) {
+      this.y += dy;
+      dy = this.anim_pos[0].y = 0;
+    }
+
+    if (dx === 0 && dy === 0) {
+      this.anim_pos = this.anim_pos.slice(1);
+    }
+  } else {
+    this.x = Math.round(this.x / 32) * 32;
+    this.y = Math.round(this.y / 32) * 32;
+  }
 };
 /* end Hero */
 

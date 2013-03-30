@@ -11,24 +11,30 @@ var requestAnimFrame = (function(){
     };
 })();
 
-var map = cartographer.blankMap(35, 35);
-
-var sprites = [];
-var objs = [];
 var ctx;
 var WIDTH = 640, HEIGHT = 480;
+var stats;
+
+var map = cartographer.blankMap(35, 35);
+var sprites = [];
+var objs = [];
+var camera;
 
 function init() {
   // Create a canvas
   var canvas = document.createElement("canvas");
+  canvas.width = WIDTH;
+  canvas.height = HEIGHT;
+  document.body.appendChild(canvas);
+
+  stats = new Stats();
+  stats.setMode(0); // 0: fps, 1: ms
+  document.body.appendChild(stats.domElement);
+
   var cell;
   var opts;
   var x, y;
   var image;
-
-  canvas.width = WIDTH;
-  canvas.height = HEIGHT;
-  document.body.appendChild(canvas);
 
   ctx = canvas.getContext("2d");
 
@@ -45,21 +51,39 @@ function init() {
     }
   }
 
-  objs.push(new Hero({x: 320, y: 224}));
+  var h = new Hero({x: 320, y: 224});
+  objs.push(h);
+
+  camera = new Camera({target: h});
 
   requestAnimFrame(render);
 }
 
+var lastFrame = +new Date();
 function render() {
+  stats.begin();
+
   var i, l;
-  var dt = 0.05;
+  var thisFrame = +new Date();
+  var dt = thisFrame - lastFrame;
+
+  ctx.fillStyle = '#000';
+  ctx.rect(0, 0, WIDTH, HEIGHT);
+
+  ctx.save();
+  camera.transform(ctx);
 
   for (i=0; i < objs.length; i++) {
     objs[i].tick(dt);
     objs[i].render(ctx);
   }
 
+  ctx.restore();
+
   requestAnimFrame(render);
+
+  lastFrame = thisFrame;
+  stats.end();
 }
 
 $(init);
