@@ -66,6 +66,7 @@ function Sprite(options) {
 
   this.offset = offsets[this.image];
   if (this.offset === undefined) {
+    console.log('image name "' + this.image + '" unknown.');
     this.offset = offsets['unknown'];
   }
 

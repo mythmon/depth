@@ -34,7 +34,7 @@ function _convolveCell(map, x, y) {
     var w = map[0].length;
     var h = map.length;
 
-    if (x >= w || x < 0 || y >= h || y < 0) {
+    if (x < 0 || x >= w || y < 0 || y >= h) {
       return fallback;
     }
     return map[y][x];
@@ -94,9 +94,39 @@ function blankMap(w, h, walls) {
   return map;
 }
 
+var neighbors = [[0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
+function insertConvoluteExample(map, x, y, code) {
+  var width = map[0].length;
+  var height = map.length;
+  var i;
+
+  function _set(dx, dy, val) {
+    var tx = x + dx;
+    var ty = y + dy;
+
+    if (tx >= 0 && tx < width && ty >= 0 && ty < height) {
+      map[ty][tx] = val;
+    }
+  }
+
+  function _cell(c) {
+    var n = parseInt(code.charAt(c), 10);
+    if (isNaN(n)) {
+      return 0;
+    }
+    return n;
+  }
+
+  _set(0, 0, _cell(0));
+  for (i=0; i<neighbors.length; i++) {
+    _set(neighbors[i][0], neighbors[i][1], _cell(i + 1));
+  }
+}
+
 window.cartographer = {
   convolute: convolute,
-  blankMap: blankMap
+  blankMap: blankMap,
+  insertConvoluteExample: insertConvoluteExample
 };
 
 })();

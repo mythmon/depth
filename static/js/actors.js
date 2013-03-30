@@ -30,7 +30,7 @@ function Hero(options) {
     sheet: 'img/sprites.png',
     image: 'hero_s',
     speed: 0.2,
-    anim_pos: [],
+    anim_pos: []
   };
   $.extend(defaults, options);
   Actor.call(this, defaults);

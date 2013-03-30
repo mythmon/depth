@@ -15,10 +15,10 @@ function Camera(opts) {
 
 Camera.prototype.transform = function(ctx) {
   if (this.target) {
-    this.x = (this.width / 2) - this.target.x;
-    this.y = (this.height / 2) - this.target.y;
-    this.x = clamp(this.x, this.clamp.x[0], this.clamp.x[1]);
-    this.y = clamp(this.y, this.clamp.y[0], this.clamp.y[1]);
+    this.x = (this.width / 2) - this.target.x - 16;
+    this.y = (this.height / 2) - this.target.y - 16;
+    this.x = utils.clamp(this.x, this.clamp.x[0], this.clamp.x[1]);
+    this.y = utils.clamp(this.y, this.clamp.y[0], this.clamp.y[1]);
   }
 
   ctx.translate(this.x, this.y);

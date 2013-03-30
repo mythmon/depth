@@ -15,7 +15,7 @@ var ctx;
 var WIDTH = 640, HEIGHT = 480;
 var stats;
 
-var map = cartographer.blankMap(35, 35);
+var map;
 var sprites = [];
 var objs = [];
 var camera;
@@ -37,6 +37,17 @@ function init() {
   var image;
 
   ctx = canvas.getContext("2d");
+
+  map = cartographer.blankMap(35, 35);
+
+  var i = 0;
+
+  for (y=3; y<map.length; y += 4) {
+    for (x=3; x<map[0].length; x += 4, i++) {
+      var code = '1' + utils.pad(i.toString(2), 8, '0');
+      cartographer.insertConvoluteExample(map, x, y, code);
+    }
+  }
 
   var convoluted = cartographer.convolute(map);
 
@@ -67,7 +78,7 @@ function render() {
   var thisFrame = +new Date();
   var dt = thisFrame - lastFrame;
 
-  ctx.fillStyle = '#000';
+  ctx.fillStyle = 'black';
   ctx.rect(0, 0, WIDTH, HEIGHT);
 
   ctx.save();
