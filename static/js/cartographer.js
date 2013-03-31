@@ -60,15 +60,16 @@ function _convolute(map) {
   var y, x;
   var w = map[0].length, h = map.length;
 
-  var output = [];
+  var convoluted = [];
+  var objs = [];
 
   for (y=0; y<h; y++) {
-    output[y] = [];
+    convoluted[y] = [];
     for (x=0; x<w; x++) {
       if (map[y][x] === 1) {
-        output[y][x] = 'wall_' + _convolveCell(map, x, y, w, h);
+        convoluted[y][x] = 'wall_' + _convolveCell(map, x, y, w, h);
       } else {
-        output[y][x] = {
+        convoluted[y][x] = {
           0: 'cobble',
           2: 'water'
         }[map[y][x]];
@@ -76,8 +77,23 @@ function _convolute(map) {
     }
   }
 
-  return output;
+  for (y = 0; y < map.length; y++) {
+    for (x = 0; x < map[0].length; x++) {
+      cell = convoluted[y][x];
+      objs.push(new Tile({
+        x: x * 32,
+        y: y * 32,
+        images: {0: cell}
+      }));
+    }
+  }
+
+  return {
+    map: map,
+    objs: objs
+  };
 }
+
 
 function _convolveCell(map, x, y) {
   var code;
@@ -105,6 +121,7 @@ function _convolveCell(map, x, y) {
 
   return _neighborMap[parseInt(code, 2)];
 }
+
 
 var neighbors = [[0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
 function _insertConvolveGroup(map, x, y, code) {
@@ -135,38 +152,52 @@ function _insertConvolveGroup(map, x, y, code) {
   }
 }
 
-function blank(w, h, walls) {
+
+function _blank(w, h, fill) {
   var i;
   var row = [];
   var map = [];
 
-  if (walls === undefined) {
-    walls = true;
-  }
-
+  // Make first row.
   for (i=0; i<w; i++) {
-    row[i] = 0;
+    row[i] = fill ? 1 : 0;
   }
-  if (walls) {
-    row[0] = 1;
-    row[w-1] = 1;
-  }
+  row[0] = 1;
+  row[w-1] = 1;
 
+  // Copy to the rest of the rows.
   for (i=0; i<h; i++) {
     map[i] = row.slice();
   }
 
-  if (walls) {
-    for (i=0; i<w; i++) {
-      map[0][i] = map[h-1][i] = 1;
-    }
+  // Add walls
+  for (i=0; i<w; i++) {
+    map[0][i] = map[h-1][i] = 1;
   }
 
   return map;
 }
 
+
+function _rect(map, x, y, w, h, fill) {
+  var i, j;
+
+  for (i=0; i<h; i++) {
+    for (j=0; j<w; j++) {
+      map[y+i][x+j] = fill;
+    }
+  }
+}
+
+
+function emptyMap() {
+  var map = _blank(32, 32);
+  return _convolute(map);
+}
+
+
 function convolutionExample() {
-  var map = cartographer.blank(67, 67);
+  var map = cartographer._blank(67, 67);
   var objs = [];
 
   var i = 0;
@@ -179,27 +210,163 @@ function convolutionExample() {
   }
 
   var convoluted = _convolute(map);
+}
 
-  for (y = 0; y < map.length; y++) {
-    for (x = 0; x < map[0].length; x++) {
-      cell = convoluted[y][x];
-      objs.push(new Tile({
-        x: x * 32,
-        y: y * 32,
-        images: {0: cell}
-      }));
+
+function mazeRegions(options) {
+  var defaults = {
+    regionCount: 6,
+    width: 100,
+    height: 100,
+    minSize: 8
+  };
+  var opts = $.extend({}, options, defaults);
+
+  var i, j, k;
+  var x, y, w, h;
+  var map = _blank(opts.width, opts.height, true);
+  var mapSize = Math.min(opts.width, opts.height);
+  var regionSize = (mapSize - opts.regionCount) / opts.regionCount;
+
+  var regions = [];
+  var left, top, right, bottom;
+
+  for (i=0; i < opts.regionCount; i++) {
+    regions[i] = [];
+    for (j=0; j < opts.regionCount; j++) {
+      left = j * regionSize + 1;
+      top = i * regionSize + 1;
+      right = left + regionSize - 2;
+      bottom = top + regionSize - 2;
+
+      x = utils.rand(left, right - opts.minSize);
+      y = utils.rand(top, bottom - opts.minSize);
+      w = utils.rand(opts.minSize, right - x);
+      h = utils.rand(opts.minSize, bottom - y);
+      console.log(right - x);
+
+      _rect(map, x, y, w, h, 0);
+      regions[i][j] = {
+        bounds: {x: x, y: y, w: w, h: h},
+        links: [],
+        id: utils.getId(),
+        index: [j, i]
+      };
     }
   }
 
-  return {
-    map: map,
-    objs: objs
-  };
+  var size;
+  var x1, y1, x2, y2;
+  var r1, r2;
+  var dirs = [[0, -1], [1, 0], [0, 1], [-1, 0]];
+  var dir;
+  var doubled = false;
+
+  w = regions[0].length;
+  h = regions.length;
+
+  while(utils.graphSize(regions[0][0]) < w * h) {
+    x1 = utils.rand(0, w);
+    y1 = utils.rand(0, h);
+    dir = dirs[utils.rand(0, dirs.length)];
+    x2 = x1 + dir[0];
+    y2 = y1 + dir[1];
+
+    if (x2 < 0 || x2 >= w || y2 < 0 || y2 >= h) {
+      continue;
+    }
+
+    r1 = regions[y1][x1];
+    r2 = regions[y2][x2];
+
+    doubled = false;
+    for (i=0; i<r1.links.length; i++) {
+      if (r1.links[i].id == r2.id) {
+        doubled = true;
+      }
+    }
+    if (doubled) continue;
+
+    r1.links.push(r2);
+    r2.links.push(r1);
+  }
+
+  var linksMade = {};
+  var start1, end1, start2, end2;
+  var startInter, endInter;
+
+  for (i=0; i<h; i++) {
+    for (j=0; j<w; j++) {
+      r1 = regions[j][i];
+      for (k=0; k<r1.links.length; k++) {
+        r2 = r1.links[k];
+
+        // Check for double links.
+        if (linksMade[r1.id + ',' + r2.id] || linksMade[r2.id + ',' + r1.id]) continue;
+        linksMade[r1.id + ',' + r2.id] = true;
+        linksMade[r2.id + ',' + r1.id] = true;
+
+        // The direction from r1 to r2.
+        var delta = [utils.sign(r2.index[0] - r1.index[0]),
+                     utils.sign(r2.index[1] - r1.index[1])];
+
+        if (delta[0]) {
+          // horizontal link
+          start1 = r1.bounds.y;
+          end1 = r1.bounds.y + r1.bounds.h;
+          start2 = r2.bounds.y;
+          end2 = r2.bounds.y + r2.bounds.h;
+        } else {
+          // vertical link;
+          start1 = r1.bounds.x;
+          end1 = r1.bounds.x + r1.bounds.w;
+          start2 = r2.bounds.x;
+          end2 = r2.bounds.x + r2.bounds.w;
+        }
+
+        var start, length;
+        // if the two ranges intersect
+        if (start1 <= end2 && end1 >= start2) {
+          // great, draw a straight line from r1 to r2.
+          startInter = Math.max(start1, start2);
+          endInter = Math.min(end1, end2);
+          var doorPos = Math.floor((startInter + endInter) / 2);
+
+          if (delta[0] > 0) {
+            // horizontal link right.
+            start = r1.bounds.x + r1.bounds.w;
+            length = r2.bounds.x - start;
+            console.log('linking ' + r1.index + ' and ' + r2.index);
+            _rect(map, start, doorPos, length, 1, 0);
+          } else if (delta[1] > 0) {
+            // vertical link down.
+            start = r1.bounds.y + r1.bounds.h;
+            length = r2.bounds.y - start;
+            console.log('linking ' + r1.index + ' and ' + r2.index);
+            _rect(map, doorPos, start, 1, length, 0);
+          } else {
+            console.log('Oops, we need backwards links: ' + delta);
+          }
+          // Left and Up links don't happen because of the order we
+          // traverse links.
+        } else {
+          // ranges don't intersect. A Z-passage is needed.
+          console.log('linking ' + r1.index + ' and ' + r2.index + ' with a z-passage');
+        }
+      }
+    }
+  }
+
+  var output =  _convolute(map);
+  output.regions = regions;
+  return output;
 }
 
+
 window.cartographer = {
-  blank: blank,
-  convolutionExample: convolutionExample
+  blank: emptyMap,
+  convolutionExample: convolutionExample,
+  mazeRegions: mazeRegions
 };
 
 })();

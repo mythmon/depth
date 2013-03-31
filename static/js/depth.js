@@ -11,6 +11,7 @@ var requestAnimFrame = (function(){
     };
 })();
 
+
 var ctx;
 var WIDTH = 640, HEIGHT = 480;
 var stats;
@@ -18,6 +19,7 @@ var stats;
 var sprites = [];
 var objs = [];
 var camera;
+
 
 function init() {
   // Create a canvas
@@ -37,7 +39,7 @@ function init() {
 
   ctx = canvas.getContext("2d");
 
-  var temp = cartographer.convolutionExample();
+  var temp = cartographer.mazeRegions();
   game.map = temp.map;
   objs = objs.concat(temp.objs);
 
@@ -50,6 +52,7 @@ function init() {
 
   render();
 }
+
 
 var lastFrame = +new Date();
 function render() {
@@ -77,7 +80,9 @@ function render() {
   stats.end();
 }
 
+
 $(init);
+
 
 window.game = {
   WIDTH: WIDTH,
