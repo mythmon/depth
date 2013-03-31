@@ -23,14 +23,19 @@ function Actor(options) {
 }
 
 Actor.prototype.render = function(ctx) {
-  ctx.save();
-  ctx.translate(this.x, this.y);
-  this.sprite.render(ctx);
-  ctx.restore();
+  if (this.sprite) {
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    this.sprite.render(ctx);
+    ctx.restore();
+  }
 };
 
 Actor.prototype.tick = function(dt) {
   if (this.anim_next.length) {
+    if (this.anim_next[0].sprite !== undefined) {
+      this.sprite = this.anim_next[0].sprite;
+    }
     var dx = this.anim_next[0].x;
     var dy = this.anim_next[0].y;
     var ang = Math.atan2(dy, dx);
@@ -99,8 +104,6 @@ Hero.prototype.move = function(dir) {
   var dx = directions[dir].x * 32;
   var dy = directions[dir].y * 32;
 
-  this.sprite = this.sprites[dir];
-
   var i;
   var target = [this.x, this.y];
   for (i = 0; i<this.anim_next.length; i++) {
@@ -113,12 +116,15 @@ Hero.prototype.move = function(dir) {
   var tile = game.pixelToTile(target[0], target[1]);
 
   if (game.walkable(tile[0], tile[1])) {
-    this.anim_next.push({x: dx, y: dy});
+    this.anim_next.push({x: dx, y: dy, sprite: this.sprites[dir]});
   } else {
     // Play a little animation.
     var _t = function(n) { return n === 0 ? 0 : n / Math.abs(n) * 2; };
-    this.anim_next.push({x: _t(dx), y: _t(dy)});
-    this.anim_next.push({x: -_t(dx), y: -_t(dy)});
+    dx = _t(dx);
+    dy = _t(dy);
+    var s = this.sprites[dir];
+    this.anim_next.push({x: dx, y: dy, sprite: s});
+    this.anim_next.push({x: -dx, y: -dy, sprite: s});
   }
 
   // This tends to be used in key events, so returning false prevents
@@ -146,7 +152,6 @@ function Tile(options) {
     if (!original_images.hasOwnProperty(key)) continue;
 
     var image = original_images[key];
-    console.log(image);
     var match = image.match(/^wall_(\d)(\d)(\d)(\d)$/);
 
     if (match) {
@@ -157,19 +162,16 @@ function Tile(options) {
       var sw = match[3];
       var nw = match[4];
 
-      console.log(o.sheet);
       var imgs = ['wall_ne_' + ne,
                   'wall_se_' + se,
                   'wall_sw_' + sw,
                   'wall_nw_' + nw];
-      console.log(imgs);
 
       o.sprites[key] = new MultiSprite({
         sheet: o.sheet,
         images:  imgs
       });
       o.sprite = o.sprites[key];
-      console.log(o.sprite);
     } else {
       o.images[key] = image;
     }
