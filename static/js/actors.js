@@ -71,12 +71,18 @@ Actor.prototype.tick = function(dt) {
   }
 };
 
-Actor.prototype.queueAnim = function(opts) {
-  if (opts.deferred === undefined) {
-    opts.deferred = $.Deferred();
+Actor.prototype.queueAnim = function(/* animList */) {
+  var anim, i;
+  var deferreds = [];
+  for (i=0; i<arguments.length; i++) {
+    anim = arguments[i];
+    if (anim.deferred === undefined) {
+      anim.deferred = $.Deferred();
+    }
+    this.animNext.push(anim);
+    deferreds.push(anim.deferred);
   }
-  this.animNext.push(opts);
-  return opts.deferred;
+  return $.when.apply(this, deferreds);
 };
 /* end Actor */
 
@@ -129,7 +135,7 @@ Hero.prototype.move = function(dir) {
 
   if (game.walkable(tile[0], tile[1])) {
     this.myTurn = false;
-    this.animNext.push({
+    this.queueAnim({
       x: dx,
       y: dy,
       sprite: this.sprites[dir],
@@ -141,12 +147,11 @@ Hero.prototype.move = function(dir) {
     dx = _t(dx);
     dy = _t(dy);
     var s = this.sprites[dir];
-    this.animNext.push({
+    this.queueAnim({
       x: dx,
       y: dy,
       sprite: s
-    });
-    this.animNext.push({
+    }, {
       x: -dx,
       y: -dy,
       sprite: s
@@ -177,7 +182,7 @@ function Tile(options) {
   var o = $.extend({}, defaults, options);
 
   var key;
-  var original_images = o.images || {}
+  var original_images = o.images || {};
   o.images = {};
   for (key in original_images) {
     if (!original_images.hasOwnProperty(key)) continue;
@@ -234,7 +239,11 @@ Goo.prototype.turn = function() {
     var tile = game.pixelToTile(this.x + dx, this.y + dy);
 
     if (game.walkable(tile[0], tile[1])) {
-      this.animNext.push({x: dx, y: dy, deferred: d});
+      this.queueAnim({
+        x: dx,
+        y: dy,
+        deferred: d
+      });
       return d.promise();
     }
   }
