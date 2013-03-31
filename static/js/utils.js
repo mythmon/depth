@@ -23,6 +23,10 @@ window.utils.rand = function(a, b) {
   return Math.floor(Math.random() * (b - a) + a);
 };
 
+window.utils.randChoice = function(list) {
+  return list[utils.rand(0, list.length)];
+};
+
 // Take an object which has an id and a links array, and count the size
 // of it's graph.
 window.utils.graphSize = function(startNode, trace) {

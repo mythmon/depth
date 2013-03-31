@@ -11,8 +11,8 @@ function Camera(opts) {
 
   if (this.clamp === undefined) {
     this.clamp = {
-      x: [game.WIDTH - game.map[0].length * 32, 0],
-      y: [game.HEIGHT - game.map.length * 32, 0]
+      x: [game.WIDTH - game.level.map[0].length * 32, 0],
+      y: [game.HEIGHT - game.level.map.length * 32, 0]
     };
   }
 }

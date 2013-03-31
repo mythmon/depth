@@ -39,11 +39,13 @@ function init() {
 
   ctx = canvas.getContext("2d");
 
-  var temp = cartographer.mazeRegions();
-  game.map = temp.map;
-  objs = objs.concat(temp.objs);
+  var level = game.level = cartographer.mazeRegions();
+  objs = objs.concat(level.objs);
 
-  var h = new Hero({x: 320, y: 160});
+  var r = utils.randChoice(level.regions);
+  x = utils.rand(r.bounds.x, r.bounds.x + r.bounds.w) * 32;
+  y = utils.rand(r.bounds.y, r.bounds.y + r.bounds.h) * 32;
+  var h = new Hero({x: x, y: y});
   objs.push(h);
   turns.push(h);
 
@@ -104,7 +106,7 @@ window.game = {
 };
 
 window.game.walkable = function(x, y) {
-  return game.map[y][x] !== 1;
+  return game.level.map[y][x] !== 1;
 };
 
 window.game.pixelToTile = function(x, y) {

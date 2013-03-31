@@ -355,7 +355,12 @@ function mazeRegions(options) {
   }
 
   var output =  _convolute(map);
-  output.regions = regions;
+
+  output.regions = [];
+  for (i=0; i<regions.length; i++) {
+    output.regions = output.regions.concat(regions[i]);
+  }
+
   return output;
 }
 
