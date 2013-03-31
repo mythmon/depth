@@ -215,10 +215,10 @@ function convolutionExample() {
 
 function mazeRegions(options) {
   var defaults = {
-    regionCount: 6,
-    width: 100,
-    height: 100,
-    minSize: 8
+    regionCount: 5,
+    width: 50,
+    height: 50,
+    minSize: 4
   };
   var opts = $.extend({}, options, defaults);
 
@@ -330,7 +330,7 @@ function mazeRegions(options) {
           // great, draw a straight line from r1 to r2.
           startInter = Math.max(start1, start2);
           endInter = Math.min(end1, end2);
-          var doorPos = Math.floor((startInter + endInter) / 2);
+          var doorPos = utils.rand(startInter, endInter);
 
           if (delta[0] > 0) {
             // horizontal link right.
