@@ -34,6 +34,9 @@ Actor.prototype.render = function(ctx) {
 Actor.prototype.tick = function(dt) {
   if (this.animNext.length) {
     var anim = this.animNext[0];
+    if (anim === null) {
+      return;
+    }
     if (anim.sprite !== undefined) {
       this.sprite = anim.sprite;
     }
@@ -62,8 +65,16 @@ Actor.prototype.tick = function(dt) {
     }
 
     if (dx === 0 && dy === 0) {
-      anim.deferred.resolve();
-      this.animNext = this.animNext.slice(1);
+      if (anim.delay) {
+        this.animNext[0] = null;
+        setTimeout(function() {
+          this.animNext = this.animNext.slice(1);
+          anim.deferred.resolve();
+        }.bind(this), anim.delay);
+      } else {
+        this.animNext = this.animNext.slice(1);
+        anim.deferred.resolve();
+      }
     }
   } else {
     this.x = Math.round(this.x / 32) * 32;
@@ -93,7 +104,11 @@ function Hero(options) {
       'n': 'hero_n',
       's': 'hero_s',
       'e': 'hero_e',
-      'w': 'hero_w'
+      'w': 'hero_w',
+      'stab_n': 'hero_stab_n',
+      'stab_s': 'hero_stab_s',
+      'stab_e': 'hero_stab_e',
+      'stab_w': 'hero_stab_w'
     },
     myTurn: false,
     turnDeferred: null,
@@ -163,6 +178,7 @@ Hero.prototype.move = function(dir) {
     dx = _t(dx);
     dy = _t(dy);
     var s = this.sprites[dir];
+
     this.queueAnim({
       x: dx,
       y: dy,
@@ -189,13 +205,21 @@ Hero.prototype.attack = function() {
     game.removeMessage('attack-dir');
     game.message('You attack empty air!');
 
-    this.sprite = this.sprites[dir];
+    var delta = directions[dir];
     this.queueAnim({
-      x: directions[dir].x * 4,
-      y: directions[dir].y * 4,
+      x: delta.x * 4,
+      y: delta.y * 4,
+      delay: 300,
+      sprite: this.sprites['stab_' + dir]
+    }, {
+      x: delta.x * -4,
+      y: delta.y * -4,
+      sprite: this.sprites[dir],
       deferred: this.turnDeferred
     });
   }.bind(this));
+
+  return false;
 };
 
 Hero.prototype.turn = function() {

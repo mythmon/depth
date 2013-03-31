@@ -16,6 +16,11 @@ var offsets = {
   'hero_s': [2, 1],
   'hero_w': [3, 1],
 
+  'hero_stab_n': [0, 2],
+  'hero_stab_e': [1, 2],
+  'hero_stab_s': [2, 2],
+  'hero_stab_w': [3, 2],
+
   // tile_pieces.png
   'wall_ne_0': [0, 0],
   'wall_ne_1': [0, 1],
