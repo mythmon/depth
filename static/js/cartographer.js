@@ -243,7 +243,6 @@ function mazeRegions(options) {
       y = utils.rand(top, bottom - opts.minSize);
       w = utils.rand(opts.minSize, right - x);
       h = utils.rand(opts.minSize, bottom - y);
-      console.log(right - x);
 
       _rect(map, x, y, w, h, 0);
       regions[i][j] = {
@@ -336,22 +335,20 @@ function mazeRegions(options) {
             // horizontal link right.
             start = r1.bounds.x + r1.bounds.w;
             length = r2.bounds.x - start;
-            console.log('linking ' + r1.index + ' and ' + r2.index);
             _rect(map, start, doorPos, length, 1, 0);
           } else if (delta[1] > 0) {
             // vertical link down.
             start = r1.bounds.y + r1.bounds.h;
             length = r2.bounds.y - start;
-            console.log('linking ' + r1.index + ' and ' + r2.index);
             _rect(map, doorPos, start, 1, length, 0);
           } else {
-            console.log('Oops, we need backwards links: ' + delta);
+            console.warn('Oops, we need backwards links: ' + delta);
           }
           // Left and Up links don't happen because of the order we
           // traverse links.
         } else {
           // ranges don't intersect. A Z-passage is needed.
-          console.log('linking ' + r1.index + ' and ' + r2.index + ' with a z-passage');
+          console.warn('Oops, we need z-passage linking');
         }
       }
     }

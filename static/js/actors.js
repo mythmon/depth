@@ -8,7 +8,7 @@ function Actor(options) {
     images: {},
     sprites: {},
     sprite: Sprite.unknown,
-    anim_next: []
+    animNext: []
   };
   $.extend(this, defaults, options);
 
@@ -32,12 +32,13 @@ Actor.prototype.render = function(ctx) {
 };
 
 Actor.prototype.tick = function(dt) {
-  if (this.anim_next.length) {
-    if (this.anim_next[0].sprite !== undefined) {
-      this.sprite = this.anim_next[0].sprite;
+  if (this.animNext.length) {
+    var anim = this.animNext[0];
+    if (anim.sprite !== undefined) {
+      this.sprite = anim.sprite;
     }
-    var dx = this.anim_next[0].x;
-    var dy = this.anim_next[0].y;
+    var dx = anim.x;
+    var dy = anim.y;
     var ang = Math.atan2(dy, dx);
 
     var fx = Math.round(Math.cos(ang) * this.speed * dt);
@@ -48,25 +49,34 @@ Actor.prototype.tick = function(dt) {
 
     this.x += fx;
     this.y += fy;
-    this.anim_next[0].x -= fx;
-    this.anim_next[0].y -= fy;
+    anim.x -= fx;
+    anim.y -= fy;
 
     if (Math.abs(dx) <= 1) {
       this.x += dx;
-      dx = this.anim_next[0].x = 0;
+      dx = anim.x = 0;
     }
     if (Math.abs(dy) <= 1) {
       this.y += dy;
-      dy = this.anim_next[0].y = 0;
+      dy = anim.y = 0;
     }
 
     if (dx === 0 && dy === 0) {
-      this.anim_next = this.anim_next.slice(1);
+      anim.deferred.resolve();
+      this.animNext = this.animNext.slice(1);
     }
   } else {
     this.x = Math.round(this.x / 32) * 32;
     this.y = Math.round(this.y / 32) * 32;
   }
+};
+
+Actor.prototype.queueAnim = function(opts) {
+  if (opts.deferred === undefined) {
+    opts.deferred = $.Deferred();
+  }
+  this.animNext.push(opts);
+  return opts.deferred;
 };
 /* end Actor */
 
@@ -78,7 +88,9 @@ function Hero(options) {
       's': 'hero_s',
       'e': 'hero_e',
       'w': 'hero_w'
-    }
+    },
+    myTurn: false,
+    turnDeferred: null
   };
   $.extend(defaults, options);
   Actor.call(this, defaults);
@@ -99,16 +111,16 @@ var directions = {
 };
 
 Hero.prototype.move = function(dir) {
-  if (this.anim_next.length >= 2) return false;
+  if (!this.myTurn) return false;
 
   var dx = directions[dir].x * 32;
   var dy = directions[dir].y * 32;
 
   var i;
   var target = [this.x, this.y];
-  for (i = 0; i<this.anim_next.length; i++) {
-    target[0] += this.anim_next[i].x;
-    target[1] += this.anim_next[i].y;
+  for (i = 0; i<this.animNext.length; i++) {
+    target[0] += this.animNext[i].x;
+    target[1] += this.animNext[i].y;
   }
   target[0] += dx;
   target[1] += dy;
@@ -116,15 +128,29 @@ Hero.prototype.move = function(dir) {
   var tile = game.pixelToTile(target[0], target[1]);
 
   if (game.walkable(tile[0], tile[1])) {
-    this.anim_next.push({x: dx, y: dy, sprite: this.sprites[dir]});
+    this.myTurn = false;
+    this.animNext.push({
+      x: dx,
+      y: dy,
+      sprite: this.sprites[dir],
+      deferred: this.turnDeferred
+    });
   } else {
     // Play a little animation.
     var _t = function(n) { return n === 0 ? 0 : n / Math.abs(n) * 2; };
     dx = _t(dx);
     dy = _t(dy);
     var s = this.sprites[dir];
-    this.anim_next.push({x: dx, y: dy, sprite: s});
-    this.anim_next.push({x: -dx, y: -dy, sprite: s});
+    this.animNext.push({
+      x: dx,
+      y: dy,
+      sprite: s
+    });
+    this.animNext.push({
+      x: -dx,
+      y: -dy,
+      sprite: s
+    });
   }
 
   // This tends to be used in key events, so returning false prevents
@@ -132,8 +158,13 @@ Hero.prototype.move = function(dir) {
   return false;
 };
 
-Hero.prototype.draw = function(ctx) {
-  Actor.prototype.draw.call(this, ctx);
+Hero.prototype.turn = function() {
+  var d = $.Deferred();
+
+  this.turnDeferred = d;
+  this.myTurn = true;
+
+  return d.promise();
 };
 /* end Hero */
 
@@ -194,23 +225,19 @@ function Goo(options) {
 
 Goo.prototype = new Actor();
 
-Goo.prototype.tick = function(dt) {
-  if (Math.pow(Math.random(), (dt / 100)) < 0.3) {
-    var dir = ['n', 's', 'e', 'w'][Math.floor(Math.random() * 4)];
+Goo.prototype.turn = function() {
+  var d = $.Deferred();
+  while (true) {
+    var dir = ['n', 's', 'e', 'w'][utils.rand(0, 3)];
     var dx = directions[dir].x * 32;
     var dy = directions[dir].y * 32;
     var tile = game.pixelToTile(this.x + dx, this.y + dy);
 
     if (game.walkable(tile[0], tile[1])) {
-      this.anim_next.push({x: dx, y: dy});
-    } else {
-      // Play a little animation.
-      var _t = function(n) { return n === 0 ? 0 : n / Math.abs(n) * 2; };
-      this.anim_next.push({x: _t(dx), y: _t(dy)});
-      this.anim_next.push({x: -_t(dx), y: -_t(dy)});
+      this.animNext.push({x: dx, y: dy, deferred: d});
+      return d.promise();
     }
   }
-  Actor.prototype.tick.call(this, dt);
 };
 /* end Goo */
 

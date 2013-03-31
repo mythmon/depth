@@ -16,8 +16,8 @@ var ctx;
 var WIDTH = 640, HEIGHT = 480;
 var stats;
 
-var sprites = [];
 var objs = [];
+var turns = [];
 var camera;
 
 
@@ -45,12 +45,26 @@ function init() {
 
   var h = new Hero({x: 320, y: 160});
   objs.push(h);
+  turns.push(h);
 
-  objs.push(new Goo({x: 352, y: 160}));
+  var g = new Goo({x: 352, y: 160});
+  objs.push(g);
+  turns.push(g);
 
   camera = new Camera({target: h});
 
   render();
+  nextTurn();
+}
+
+
+var currentTurn = 0;
+function nextTurn() {
+  var actor = turns[currentTurn];
+  var d = actor.turn();
+  console.log('Starting turn for ' + actor.sprite.image);
+  currentTurn = (currentTurn + 1) % turns.length;
+  d.then(nextTurn);
 }
 
 
