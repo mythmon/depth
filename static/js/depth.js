@@ -23,14 +23,13 @@ var camera;
 
 function init() {
   // Create a canvas
-  var canvas = document.createElement("canvas");
+  var canvas = $('#game canvas')[0];
   canvas.width = WIDTH;
   canvas.height = HEIGHT;
-  document.body.appendChild(canvas);
 
   stats = new Stats();
   stats.setMode(0); // 0: fps, 1: ms
-  document.body.appendChild(stats.domElement);
+  $('body').append(stats.domElement);
 
   var cell;
   var opts;
@@ -57,6 +56,9 @@ function init() {
 
   render();
   nextTurn();
+
+  game.message('Welcome to Depth.');
+  game.message('Find and kill the Slime.');
 }
 
 
@@ -64,7 +66,6 @@ var currentTurn = 0;
 function nextTurn() {
   var actor = turns[currentTurn];
   var d = actor.turn();
-  console.log('Starting turn for ' + actor.sprite.image);
   currentTurn = (currentTurn + 1) % turns.length;
   d.then(nextTurn);
 }
@@ -111,6 +112,23 @@ window.game.walkable = function(x, y) {
 
 window.game.pixelToTile = function(x, y) {
   return [Math.floor(x / 32), Math.floor(y / 32)];
+};
+
+var $messageContainer = $('#game .messages');
+window.game.message = function(msg, id) {
+  var $msg = $('<li/>').text(msg);
+
+  if (id) {
+    $msg.attr('id', id);
+  }
+
+  $messageContainer
+    .append($msg)
+    .scrollTop(99999999);
+};
+
+window.game.removeMessage = function(id) {
+  $messageContainer.find('#' + id).remove();
 };
 
 })();

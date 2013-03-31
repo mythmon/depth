@@ -96,7 +96,8 @@ function Hero(options) {
       'w': 'hero_w'
     },
     myTurn: false,
-    turnDeferred: null
+    turnDeferred: null,
+    dirInputDeferred: null
   };
   $.extend(defaults, options);
   Actor.call(this, defaults);
@@ -105,6 +106,7 @@ function Hero(options) {
   key('right, d', this.move.bind(this, 'e'));
   key('up, w', this.move.bind(this, 'n'));
   key('down, s', this.move.bind(this, 's'));
+  key('space', this.attack.bind(this));
 }
 
 Hero.prototype = new Actor();
@@ -116,8 +118,22 @@ var directions = {
   w: {x: -1, y: 0}
 };
 
+/* Handle directional movement for the character.
+ *
+ * If `this.dirInputDeferred` is not null, it is assumed to be a deferred. It
+ * will be resolved with the direction of the key press, and this
+ * function will return early.
+ *
+ * This should always return False, since it is used in key bindings.
+ */
 Hero.prototype.move = function(dir) {
   if (!this.myTurn) return false;
+
+  if (this.dirInputDeferred) {
+    this.dirInputDeferred.resolve(dir);
+    this.dirInputDeferred = null;
+    return false;
+  }
 
   var dx = directions[dir].x * 32;
   var dy = directions[dir].y * 32;
@@ -161,6 +177,25 @@ Hero.prototype.move = function(dir) {
   // This tends to be used in key events, so returning false prevents
   // the default action.
   return false;
+};
+
+Hero.prototype.attack = function() {
+  if (!this.myTurn) return false;
+  this.dirInputDeferred = $.Deferred();
+
+  game.message('Pick a direction to attack.', 'attack-dir');
+
+  this.dirInputDeferred.then(function(dir) {
+    game.removeMessage('attack-dir');
+    game.message('You attack empty air!');
+
+    this.sprite = this.sprites[dir];
+    this.queueAnim({
+      x: directions[dir].x * 4,
+      y: directions[dir].y * 4,
+      deferred: this.turnDeferred
+    });
+  }.bind(this));
 };
 
 Hero.prototype.turn = function() {
@@ -232,8 +267,14 @@ Goo.prototype = new Actor();
 
 Goo.prototype.turn = function() {
   var d = $.Deferred();
+
+  if (Math.random() < 0.1) {
+    d.resolve();
+    return d.promise();
+  }
+
   while (true) {
-    var dir = ['n', 's', 'e', 'w'][utils.rand(0, 3)];
+    var dir = ['n', 's', 'e', 'w'][utils.rand(0, 4)];
     var dx = directions[dir].x * 32;
     var dy = directions[dir].y * 32;
     var tile = game.pixelToTile(this.x + dx, this.y + dy);
