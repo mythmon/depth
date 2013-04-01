@@ -50,12 +50,17 @@ function init() {
   objs.push(hero);
   turns.push(hero);
 
-  r = utils.randChoice(level.regions);
-  x = utils.rand(r.bounds.x, r.bounds.x + r.bounds.w) * 32;
-  y = utils.rand(r.bounds.y, r.bounds.y + r.bounds.h) * 32;
-  var g = new Goo({x: x, y: y});
-  objs.push(g);
-  turns.push(g);
+  // Add two randoms to get a distribution that peaks in the middle.
+  var gooCount = utils.rand(1, 2) + utils.rand(0, 2);
+  var goo;
+  for (i=0; i<gooCount; i++) {
+    r = utils.randChoice(level.regions);
+    x = utils.rand(r.bounds.x, r.bounds.x + r.bounds.w) * 32;
+    y = utils.rand(r.bounds.y, r.bounds.y + r.bounds.h) * 32;
+    goo = new Goo({x: x, y: y});
+    objs.push(goo);
+    turns.push(goo);
+  }
 
   camera = new Camera({target: hero});
 
@@ -65,7 +70,7 @@ function init() {
   key.setScope('game');
 
   game.message('Welcome to Depth.');
-  game.message('Find and kill the Slime.');
+  game.message('Find and kill the slimes.');
 }
 
 
@@ -109,7 +114,7 @@ function tick() {
 
   ctx.restore();
 
-  if (countEnemies() === 0) {
+  if (game.countEnemies() === 0) {
     $('.win').show();
     key.setScope('gameover');
   }
@@ -122,18 +127,6 @@ function tick() {
 
   lastFrame = thisFrame;
   stats.end();
-}
-
-
-function countEnemies() {
-  var i, a, count = 0;
-  for (i=0; i<turns.length; i++) {
-    a = turns[i];
-    if (!a.remove && a.name === 'goo') {
-      count++;
-    }
-  }
-  return count;
 }
 
 
@@ -160,6 +153,18 @@ window.game.walkable = function(x, y) {
 window.game.pixelToTile = function(x, y) {
   return [Math.floor(x / 32), Math.floor(y / 32)];
 };
+
+window.game.countEnemies = function() {
+  var i, a, count = 0;
+  for (i=0; i<turns.length; i++) {
+    a = turns[i];
+    if (!a.remove && a.name === 'goo') {
+      count++;
+    }
+  }
+  return count;
+};
+
 
 var $messageContainer = $('.game .messages');
 window.game.message = function(msg, id) {

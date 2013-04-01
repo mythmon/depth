@@ -341,6 +341,8 @@ Tile.prototype.enter = function(actor) {
 Tile.prototype.exit = function(actor) {
   var index = this.occupants.indexOf(actor);
   this.occupants.splice(index, 1);
+
+
 };
 
 Tile.prototype.updateTile = function() {
@@ -353,7 +355,7 @@ function Goo(options) {
   var defaults = {
     name: 'goo',
     images: {0: 'goo'},
-    health: 3
+    health: utils.rand(2,4)
   };
   var o = $.extend({}, defaults, options);
   Actor.call(this, o);
@@ -390,7 +392,11 @@ Goo.prototype.gotHit = function(damage) {
   this.health -= damage;
   if (this.health <= 0) {
     this.remove = true;
+    this.currentTile.exit(this);
     game.message('You killed the slime!');
+    if (game.countEnemies() > 0) {
+      game.message('There is more work to be done.');
+    }
   }
 };
 /* end Goo */
