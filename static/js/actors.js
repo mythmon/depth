@@ -140,16 +140,18 @@ function Hero(options) {
     },
     myTurn: false,
     turnDeferred: null,
-    dirInputDeferred: null
+    dirInputDeferred: null,
+    health: 10
   };
   $.extend(defaults, options);
   Actor.call(this, defaults);
 
-  key('left, a', this.move.bind(this, 'w'));
-  key('right, d', this.move.bind(this, 'e'));
-  key('up, w', this.move.bind(this, 'n'));
-  key('down, s', this.move.bind(this, 's'));
-  key('space', this.attack.bind(this));
+  key('left', 'game', this.move.bind(this, 'w'));
+  key('right', 'game', this.move.bind(this, 'e'));
+  key('up', 'game', this.move.bind(this, 'n'));
+  key('down', 'game', this.move.bind(this, 's'));
+  key('space', 'game', this.attack.bind(this));
+  key('w', 'game', this.wait.bind(this));
 }
 
 Hero.prototype = new Actor();
@@ -250,6 +252,7 @@ Hero.prototype.attack = function() {
       game.message('You attack empty air!');
     } else {
       game.message('You attack the ' + target.name + '!');
+      target.gotHit(1);
     }
 
     this.queueAnim({
@@ -266,6 +269,13 @@ Hero.prototype.attack = function() {
   }.bind(this));
 
   return false;
+};
+
+Hero.prototype.wait = function() {
+  if (!this.myTurn) return;
+
+  this.myTurn = false;
+  this.turnDeferred.resolve();
 };
 
 Hero.prototype.turn = function() {
@@ -342,7 +352,8 @@ Tile.prototype.updateTile = function() {
 function Goo(options) {
   var defaults = {
     name: 'goo',
-    images: {0: 'goo'}
+    images: {0: 'goo'},
+    health: 3
   };
   var o = $.extend({}, defaults, options);
   Actor.call(this, o);
@@ -372,6 +383,14 @@ Goo.prototype.turn = function() {
       });
       return d.promise();
     }
+  }
+};
+
+Goo.prototype.gotHit = function(damage) {
+  this.health -= damage;
+  if (this.health <= 0) {
+    this.remove = true;
+    game.message('You killed the slime!');
   }
 };
 /* end Goo */

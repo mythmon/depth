@@ -19,6 +19,7 @@ var stats;
 var objs = [];
 var turns = [];
 var camera;
+var hero;
 
 
 function init() {
@@ -45,9 +46,9 @@ function init() {
   r = utils.randChoice(level.regions);
   x = utils.rand(r.bounds.x, r.bounds.x + r.bounds.w) * 32;
   y = utils.rand(r.bounds.y, r.bounds.y + r.bounds.h) * 32;
-  var h = new Hero({x: x, y: y});
-  objs.push(h);
-  turns.push(h);
+  hero = new Hero({x: x, y: y});
+  objs.push(hero);
+  turns.push(hero);
 
   r = utils.randChoice(level.regions);
   x = utils.rand(r.bounds.x, r.bounds.x + r.bounds.w) * 32;
@@ -56,10 +57,12 @@ function init() {
   objs.push(g);
   turns.push(g);
 
-  camera = new Camera({target: h});
+  camera = new Camera({target: hero});
 
-  render();
+  tick();
   nextTurn();
+
+  key.setScope('game');
 
   game.message('Welcome to Depth.');
   game.message('Find and kill the Slime.');
@@ -68,6 +71,11 @@ function init() {
 
 var currentTurn = 0;
 function nextTurn() {
+  if (turns.length === 0) return;
+  while (turns[currentTurn].remove) {
+    turns.splice(currentTurn, 1);
+    currentTurn %= turns.length;
+  }
   var actor = turns[currentTurn];
   var d = actor.turn();
   currentTurn = (currentTurn + 1) % turns.length;
@@ -76,7 +84,7 @@ function nextTurn() {
 
 
 var lastFrame = +new Date();
-function render() {
+function tick() {
   stats.begin();
 
   var i, l;
@@ -93,12 +101,39 @@ function render() {
     objs[i].render(ctx);
   }
 
+  for (i=objs.length - 1; i>=0; i--) {
+    if (objs[i].remove) {
+      objs.splice(i, 1);
+    }
+  }
+
   ctx.restore();
 
-  requestAnimFrame(render);
+  if (countEnemies() === 0) {
+    $('.win').show();
+    key.setScope('gameover');
+  }
+  if (hero.health <= 0) {
+    $('.lose').show();
+    key.setScope('gameover');
+  }
+
+  requestAnimFrame(tick);
 
   lastFrame = thisFrame;
   stats.end();
+}
+
+
+function countEnemies() {
+  var i, a, count = 0;
+  for (i=0; i<turns.length; i++) {
+    a = turns[i];
+    if (!a.remove && a.name === 'goo') {
+      count++;
+    }
+  }
+  return count;
 }
 
 

@@ -222,8 +222,8 @@ function convolutionExample() {
 function mazeRegions(options) {
   var defaults = {
     regionCount: 5,
-    width: 50,
-    height: 50,
+    width: 40,
+    height: 40,
     minSize: 4
   };
   var opts = $.extend({}, options, defaults);

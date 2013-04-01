@@ -12,14 +12,35 @@
 <body>
   <div class="game">
     <h1>Depth</h1>
-    <canvas></canvas>
+
+    <div class="canvas-wrap">
+      <canvas></canvas>
+
+      <div class="win">
+        <div class="inner">
+          <p>You have erradicated the slimes.</p>
+          <p>You win!</p>
+        </div>
+      </div>
+
+      <div class="lose">
+        <div class="inner">
+          <p>The slimes have killed you.</p>
+          <p>You are dead.</p>
+        </div>
+      </div>
+    </div>
+
     <ul class="messages"></ul>
+
     <div class="instructions">
       <h2>Instructions</h2>
       <p>This is a turn based game.</p>
-      <p>Move with the arrow keys or WASD.</p>
+      <p>Move with the arrow keys.</p>
       <p>Attack by pressing space and then pressing a direction.</p>
+      <p>Press 'W' to wait a turn without taking an action.</p>
     </div>
+
   </div>
 
   <script src="js/lib/jquery.js"></script>
