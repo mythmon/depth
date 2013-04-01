@@ -59,9 +59,15 @@ var _neighborMap = [
 function _convolute(map) {
   var y, x;
   var w = map[0].length, h = map.length;
+  var t;
 
   var convoluted = [];
-  var objs = [];
+
+  var out = {
+    map: map,
+    objs: [],
+    tiles: []
+  };
 
   for (y=0; y<h; y++) {
     convoluted[y] = [];
@@ -78,20 +84,20 @@ function _convolute(map) {
   }
 
   for (y = 0; y < map.length; y++) {
+    out.tiles[y] = [];
     for (x = 0; x < map[0].length; x++) {
       cell = convoluted[y][x];
-      objs.push(new Tile({
+      t = new Tile({
         x: x * 32,
         y: y * 32,
         images: {0: cell}
-      }));
+      });
+      out.tiles[y][x] = t;
+      out.objs.push(t);
     }
   }
 
-  return {
-    map: map,
-    objs: objs
-  };
+  return out;
 }
 
 

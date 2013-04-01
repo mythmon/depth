@@ -23,7 +23,7 @@ var camera;
 
 function init() {
   // Create a canvas
-  var canvas = $('#game canvas')[0];
+  var canvas = $('.game canvas')[0];
   canvas.width = WIDTH;
   canvas.height = HEIGHT;
 
@@ -34,6 +34,7 @@ function init() {
   var cell;
   var opts;
   var x, y;
+  var r;
   var image;
 
   ctx = canvas.getContext("2d");
@@ -41,14 +42,17 @@ function init() {
   var level = game.level = cartographer.mazeRegions();
   objs = objs.concat(level.objs);
 
-  var r = utils.randChoice(level.regions);
+  r = utils.randChoice(level.regions);
   x = utils.rand(r.bounds.x, r.bounds.x + r.bounds.w) * 32;
   y = utils.rand(r.bounds.y, r.bounds.y + r.bounds.h) * 32;
   var h = new Hero({x: x, y: y});
   objs.push(h);
   turns.push(h);
 
-  var g = new Goo({x: 352, y: 160});
+  r = utils.randChoice(level.regions);
+  x = utils.rand(r.bounds.x, r.bounds.x + r.bounds.w) * 32;
+  y = utils.rand(r.bounds.y, r.bounds.y + r.bounds.h) * 32;
+  var g = new Goo({x: x, y: y});
   objs.push(g);
   turns.push(g);
 
@@ -107,6 +111,14 @@ window.game = {
 };
 
 window.game.walkable = function(x, y) {
+  var i, tile = game.level.tiles[y][x];
+
+  for (i=0; i<tile.occupants.length; i++) {
+    if (!tile.occupants[i].walkable) {
+      return false;
+    }
+  }
+
   return game.level.map[y][x] !== 1;
 };
 
@@ -114,7 +126,7 @@ window.game.pixelToTile = function(x, y) {
   return [Math.floor(x / 32), Math.floor(y / 32)];
 };
 
-var $messageContainer = $('#game .messages');
+var $messageContainer = $('.game .messages');
 window.game.message = function(msg, id) {
   var $msg = $('<li/>').text(msg);
 
@@ -124,6 +136,7 @@ window.game.message = function(msg, id) {
 
   $messageContainer
     .append($msg)
+    // XXX This is hack to scroll to bottom
     .scrollTop(99999999);
 };
 

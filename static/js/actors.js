@@ -8,9 +8,15 @@ function Actor(options) {
     images: {},
     sprites: {},
     sprite: Sprite.unknown,
-    animNext: []
+    animNext: [],
+    currentTile: null,
+    walkable: false,
+    name: 'unknown actor'
   };
   $.extend(this, defaults, options);
+
+  this.x += 16;
+  this.y += 16;
 
   var key;
   for (key in this.images) {
@@ -20,12 +26,16 @@ function Actor(options) {
       image: this.images[key]
     });
   }
+
+  if (options === undefined) return;
+
+  this.updateTile();
 }
 
 Actor.prototype.render = function(ctx) {
   if (this.sprite) {
     ctx.save();
-    ctx.translate(this.x, this.y);
+    ctx.translate(this.x - 16, this.y - 16);
     this.sprite.render(ctx);
     ctx.restore();
   }
@@ -44,8 +54,8 @@ Actor.prototype.tick = function(dt) {
     var dy = anim.y;
     var ang = Math.atan2(dy, dx);
 
-    var fx = Math.round(Math.cos(ang) * this.speed * dt);
-    var fy = Math.round(Math.sin(ang) * this.speed * dt);
+    var fx = Math.cos(ang) * this.speed * dt;
+    var fy = Math.sin(ang) * this.speed * dt;
 
     if (Math.abs(fx) > Math.abs(dx)) fx = dx;
     if (Math.abs(fy) > Math.abs(dy)) fy = dy;
@@ -65,6 +75,11 @@ Actor.prototype.tick = function(dt) {
     }
 
     if (dx === 0 && dy === 0) {
+      this.x = Math.round(this.x);
+      this.y = Math.round(this.y);
+
+      this.updateTile();
+
       if (anim.delay) {
         this.animNext[0] = null;
         setTimeout(function() {
@@ -76,9 +91,6 @@ Actor.prototype.tick = function(dt) {
         anim.deferred.resolve();
       }
     }
-  } else {
-    this.x = Math.round(this.x / 32) * 32;
-    this.y = Math.round(this.y / 32) * 32;
   }
 };
 
@@ -95,11 +107,27 @@ Actor.prototype.queueAnim = function(/* animList */) {
   }
   return $.when.apply(this, deferreds);
 };
+
+Actor.prototype.updateTile = function() {
+  var tilePos = game.pixelToTile(this.x, this.y);
+  var newTile = game.level.tiles[tilePos[1]][tilePos[0]];
+
+  // First run
+  if (this.currentTile === null) {
+    newTile.enter(this);
+    this.currentTile = newTile;
+  } else if (newTile !== this.currentTile) {
+    this.currentTile.exit(this);
+    newTile.enter(this);
+    this.currentTile = newTile;
+  }
+};
 /* end Actor */
 
 /* class Hero */
 function Hero(options) {
   var defaults = {
+    name: 'Hero',
     images: {
       'n': 'hero_n',
       's': 'hero_s',
@@ -202,10 +230,28 @@ Hero.prototype.attack = function() {
   game.message('Pick a direction to attack.', 'attack-dir');
 
   this.dirInputDeferred.then(function(dir) {
-    game.removeMessage('attack-dir');
-    game.message('You attack empty air!');
-
+    var i, tile, target = null;
     var delta = directions[dir];
+    var o;
+    var targetIndex = game.pixelToTile(this.x + delta.x * 32,
+                                       this.y + delta.y * 32);
+
+    tile = game.level.tiles[targetIndex[1]][targetIndex[0]];
+
+    for (i=0; i<tile.occupants.length; i++) {
+      o = tile.occupants[i];
+      if (!o.walkable) {
+        target = o;
+      }
+    }
+
+    game.removeMessage('attack-dir');
+    if (target === null) {
+      game.message('You attack empty air!');
+    } else {
+      game.message('You attack the ' + target.name + '!');
+    }
+
     this.queueAnim({
       x: delta.x * 4,
       y: delta.y * 4,
@@ -236,7 +282,8 @@ Hero.prototype.turn = function() {
 function Tile(options) {
   var defaults = {
     sheet: 'img/sprites.png',
-    sprites: {}
+    sprites: {},
+    occupants: []
   };
   var o = $.extend({}, defaults, options);
 
@@ -276,11 +323,25 @@ function Tile(options) {
 }
 
 Tile.prototype = new Actor();
+
+Tile.prototype.enter = function(actor) {
+  this.occupants.push(actor);
+};
+
+Tile.prototype.exit = function(actor) {
+  var index = this.occupants.indexOf(actor);
+  this.occupants.splice(index, 1);
+};
+
+Tile.prototype.updateTile = function() {
+  // This doesn't make sense for Tiles. Noop.
+};
 /* end Tile */
 
 /* class Goo */
 function Goo(options) {
   var defaults = {
+    name: 'goo',
     images: {0: 'goo'}
   };
   var o = $.extend({}, defaults, options);
