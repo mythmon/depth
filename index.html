@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Depth</title>
+
+  <link rel="stylesheet" type="text/css" href="css/lib/normalize.css">
+  <link rel="stylesheet" type="text/css" href="css/depth.css">
+</head>
+
+<body>
+  <div class="game">
+    <h1>Depth</h1>
+
+    <div class="canvas-wrap">
+      <canvas></canvas>
+
+      <div class="win">
+        <div class="inner">
+          <p>You have erradicated the slimes.</p>
+          <p>You win!</p>
+        </div>
+      </div>
+
+      <div class="lose">
+        <div class="inner">
+          <p>The slimes have killed you.</p>
+          <p>You are dead.</p>
+        </div>
+      </div>
+    </div>
+
+    <ul class="messages"></ul>
+
+    <div class="instructions">
+      <h2>Instructions</h2>
+      <p>This is a turn based game.</p>
+      <p>Move with the arrow keys.</p>
+      <p>Attack by pressing space and then pressing a direction.</p>
+      <p>Press 'W' to wait a turn without taking an action.</p>
+    </div>
+
+  </div>
+
+  <script src="js/lib/jquery.js"></script>
+  <script src="js/lib/keymaster.js"></script>
+  <script src="js/lib/stats.js"></script>
+
+  <script src="js/resource.js"></script>
+  <script src="js/cartographer.js"></script>
+  <script src="js/sprite.js"></script>
+  <script src="js/actors.js"></script>
+  <script src="js/camera.js"></script>
+  <script src="js/utils.js"></script>
+
+  <script src="js/depth.js"></script>
+</body>
+
+</html>
