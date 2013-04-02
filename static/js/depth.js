@@ -167,11 +167,15 @@ window.game.countEnemies = function() {
 
 
 var $messageContainer = $('.game .messages');
-window.game.message = function(msg, id) {
+window.game.message = function(msg, id, color) {
   var $msg = $('<li/>').text(msg);
 
   if (id) {
     $msg.attr('id', id);
+  }
+
+  if (color) {
+    $msg.addClass(color);
   }
 
   $messageContainer
