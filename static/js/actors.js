@@ -283,7 +283,7 @@ Hero.prototype.turn = function() {
 
   this.turnDeferred = d;
   this.myTurn = true;
-  game.message("It is your turn", null, "green");
+  game.message("It is your turn", null, "good");
 
   return d.promise();
 };
@@ -367,7 +367,7 @@ Goo.prototype = new Actor();
 Goo.prototype.turn = function() {
   var d = $.Deferred();
 
-  game.message("It is the slimes turn.", null, "red");
+  game.message("It is the slimes turn.", null, "bad");
 
   if (Math.random() < 0.1) {
     d.resolve();
