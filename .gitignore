@@ -2,3 +2,5 @@ node_modules
 twistd.pid
 # Only Stylus files.
 static/css/*.css
+# Build directory
+build
