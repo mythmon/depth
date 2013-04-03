@@ -95,7 +95,7 @@ function upload() {
   init
   pushd $BUILD_DIR > /dev/null
     # Push
-    echo git push -fu origin gh-pages:gh-pages > /dev/null
+    git push -f origin gh-pages:gh-pages > /dev/null
   popd > /dev/null
 }
 
