@@ -168,6 +168,8 @@ window.game.countEnemies = function() {
 
 var $messageContainer = $('.game .messages');
 window.game.message = function(msg, html_dict) {
+  if (html_dict === undefined) html_dict = {};
+
   var $msg = $('<li/>').text(msg);
 
   if ('id' in html_dict) {
