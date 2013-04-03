@@ -229,7 +229,7 @@ Hero.prototype.attack = function() {
   if (!this.myTurn) return false;
   this.dirInputDeferred = $.Deferred();
 
-  game.message('Pick a direction to attack.', 'attack-dir');
+  game.message('Pick a direction to attack.', { 'id': 'attack-dir' });
 
   this.dirInputDeferred.then(function(dir) {
     var i, tile, target = null;
@@ -283,7 +283,7 @@ Hero.prototype.turn = function() {
 
   this.turnDeferred = d;
   this.myTurn = true;
-  game.message("It is your turn", null, "good");
+  game.message("It is your turn", { 'class': 'good' });
 
   return d.promise();
 };
@@ -367,7 +367,7 @@ Goo.prototype = new Actor();
 Goo.prototype.turn = function() {
   var d = $.Deferred();
 
-  game.message("It is the slimes turn.", null, "bad");
+  game.message("It is the slimes turn.", { 'class': 'bad' });
 
   if (Math.random() < 0.1) {
     d.resolve();
