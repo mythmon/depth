@@ -25,6 +25,12 @@ body {
 .game ul li {
   list-style: none;
 }
+.game ul li.bad {
+  color: #f00;
+}
+.game ul li.good {
+  color: #00f;
+}
 .game .canvas-wrap {
   position: relative;
 }
